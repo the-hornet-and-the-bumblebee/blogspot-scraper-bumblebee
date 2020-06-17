@@ -6,10 +6,10 @@ Usage:
 Note:  IP-number may be temporarily banned from the Blogger service if over-used.
 """
 
-import unidecode
 import requests
 import io
 import re
+import string
 from bs4 import BeautifulSoup
 import dateparser
 from datetime import datetime
@@ -20,21 +20,10 @@ url = 'http://myblogtoscrap.blogspot.com/'
 headers = {"User-Agent" : 'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:24.0) Gecko/20100101 Firefox/24.0'}
 
 def FormattingString(MyStringToFormat):
-    MyStringToFormat = MyStringToFormat.replace('\r', '')
-    MyStringToFormat = MyStringToFormat.replace('/', '-')
-    MyStringToFormat = MyStringToFormat.replace('?', '-')
-    MyStringToFormat = MyStringToFormat.replace('!', '-')
-    MyStringToFormat = MyStringToFormat.replace(':', '-')
-    MyStringToFormat = MyStringToFormat.replace(';', '-')
-    MyStringToFormat = MyStringToFormat.replace(',', '-')
-    MyStringToFormat = MyStringToFormat.replace('#', '-')
-    MyStringToFormat = MyStringToFormat.replace('\"', '')
-    MyStringToFormat = MyStringToFormat.replace('\'', '')
-    MyStringToFormat = unidecode.unidecode(MyStringToFormat)
-    return MyStringToFormat
+    exclude = set(string.punctuation)
+    return ''.join(ch for ch in MyStringToFormat if ch not in exclude)
 
 while True:
-
     page = requests.get(url, headers=headers)
     html_soup = BeautifulSoup(page.text, 'html.parser')
     AllPosts = html_soup.find_all('div', class_="date-outer") # Retrieving all posts on the current page
@@ -53,12 +42,12 @@ while True:
         FormattedPostDate = datetime.strftime(dateparser.parse(NotFormattedPostDatee), '%Y%m%d')
 
         # Title cleaning
-        titrePostClean = FormattingString(EachPost.h3.a.text.replace('\n', ''))
+        FormattedPostTitle = FormattingString(EachPost.h3.a.text.replace('\n', ''))
 
         # Retrieving blog post content
         PostContent = html_soup.find(id="post-body-" + ListPostID[PostIndex])
         # File creation
-        with open(str(FormattedPostDate) + " " + titrePostClean + ".html", "w", encoding="utf-8") as outputfile:
+        with open(str(FormattedPostDate) + " " + FormattedPostTitle + ".html", "w", encoding="utf-8") as outputfile:
             outputfile.write(str(PostContent))
 
         PostIndex += 1
