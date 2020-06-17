@@ -23,6 +23,9 @@ def FormattingString(MyStringToFormat):
     exclude = set(string.punctuation)
     return ''.join(ch for ch in MyStringToFormat if ch not in exclude)
 
+def FormattingStringV2(MyStringToFormat):
+    return MyStringToFormat.translate(str.maketrans('', '', string.punctuation))
+
 while True:
     page = requests.get(url, headers=headers)
     html_soup = BeautifulSoup(page.text, 'html.parser')
@@ -42,7 +45,7 @@ while True:
         FormattedPostDate = datetime.strftime(dateparser.parse(NotFormattedPostDatee), '%Y%m%d')
 
         # Title cleaning
-        FormattedPostTitle = FormattingString(EachPost.h3.a.text.replace('\n', ''))
+        FormattedPostTitle = FormattingStringV2(EachPost.h3.a.text.replace('\n', ''))
 
         # Retrieving blog post content
         PostContent = html_soup.find(id="post-body-" + ListPostID[PostIndex])
